@@ -151,7 +151,23 @@
       "phoneInvalid": "يرجى إدخال رقم هاتف صحيح (6-15 رقم)",
       "countryRequired": "البلد مطلوب",
       "businessNameRequired": "اسم العمل مطلوب"
-    }
+    },
+    "promoCode": {
+      "label": "رمز الخصم",
+      "placeholder": "أدخل رمز الخصم",
+      "apply": "تطبيق",
+      "applying": "جاري التطبيق...",
+      "remove": "إزالة",
+      "applied": "تم تطبيق رمز الخصم!",
+      "discount": "الخصم",
+      "invalidCode": "رمز الخصم غير صالح",
+      "expiredCode": "انتهت صلاحية رمز الخصم",
+      "usageLimitReached": "وصل رمز الخصم إلى الحد الأقصى للاستخدام",
+      "minimumNotMet": "الحد الأدنى للطلب ${amount} مطلوب"
+    },
+    "loading": "جاري التحميل...",
+    "loadingState": "جاري تحميل معلومات الولاية...",
+    "loadingPricing": "جاري تحميل الأسعار..."
   },
   "orderSuccess": {
     "title": "تم تسجيل اهتمامك!",

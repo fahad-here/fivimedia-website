@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProgressIndicator from "@/components/wizard/ProgressIndicator";
 import OrderSummary from "@/components/wizard/OrderSummary";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 import { useWizard } from "@/contexts/WizardContext";
 import { locales, type Locale } from "@/i18n/config";
 import { sortedCountries } from "@/data/countries";
@@ -302,7 +303,9 @@ export default function CheckoutPage({ locale }: CheckoutPageProps) {
                     disabled={isSubmitting}
                     className="w-full py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? tCommon("loading") : t("placeOrder")}
+                    <ButtonLoader loading={isSubmitting} loadingText={tCommon("loading")}>
+                      {t("placeOrder")}
+                    </ButtonLoader>
                   </button>
 
                   <div className="text-center text-sm text-muted-foreground">
@@ -333,7 +336,7 @@ export default function CheckoutPage({ locale }: CheckoutPageProps) {
 
               {/* Promo Code Section */}
               <div className="bg-muted rounded-xl p-6">
-                <h3 className="font-semibold mb-4">{t("promoCode") || "Promo Code"}</h3>
+                <h3 className="font-semibold mb-4">{t("promoCode.label")}</h3>
 
                 {appliedPromo ? (
                   <div className="space-y-3">
@@ -350,15 +353,15 @@ export default function CheckoutPage({ locale }: CheckoutPageProps) {
                         onClick={handleRemovePromo}
                         className="text-sm hover:underline"
                       >
-                        {t("remove") || "Remove"}
+                        {t("promoCode.remove")}
                       </button>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{t("discount") || "Discount"}:</span>
+                      <span className="text-muted-foreground">{t("promoCode.discount")}:</span>
                       <span className="text-success font-medium">-${appliedPromo.discountAmount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-border">
-                      <span className="font-semibold">{t("finalTotal") || "Final Total"}:</span>
+                      <span className="font-semibold">{t("total")}:</span>
                       <span className="font-semibold text-primary">${getFinalTotal().toFixed(2)}</span>
                     </div>
                   </div>
@@ -369,7 +372,7 @@ export default function CheckoutPage({ locale }: CheckoutPageProps) {
                         type="text"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                        placeholder={t("enterPromoCode") || "Enter code"}
+                        placeholder={t("promoCode.placeholder")}
                         className="flex-1 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary uppercase"
                       />
                       <button
@@ -377,7 +380,9 @@ export default function CheckoutPage({ locale }: CheckoutPageProps) {
                         disabled={promoLoading}
                         className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
                       >
-                        {promoLoading ? "..." : t("apply") || "Apply"}
+                        <ButtonLoader loading={promoLoading} loadingText={t("promoCode.applying")}>
+                          {t("promoCode.apply")}
+                        </ButtonLoader>
                       </button>
                     </div>
                     {promoError && (

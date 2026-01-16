@@ -151,7 +151,23 @@
       "phoneInvalid": "Please enter a valid phone number (6-15 digits)",
       "countryRequired": "Country is required",
       "businessNameRequired": "Business name is required"
-    }
+    },
+    "promoCode": {
+      "label": "Promo Code",
+      "placeholder": "Enter promo code",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "remove": "Remove",
+      "applied": "Promo code applied!",
+      "discount": "Discount",
+      "invalidCode": "Invalid promo code",
+      "expiredCode": "This promo code has expired",
+      "usageLimitReached": "This promo code has reached its usage limit",
+      "minimumNotMet": "Minimum order amount of ${amount} required"
+    },
+    "loading": "Loading...",
+    "loadingState": "Loading state information...",
+    "loadingPricing": "Loading pricing..."
   },
   "orderSuccess": {
     "title": "Interest Registered!",

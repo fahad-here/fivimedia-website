@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProgressIndicator from "@/components/wizard/ProgressIndicator";
+import PageLoader from "@/components/ui/PageLoader";
 import { useWizard } from "@/contexts/WizardContext";
 import { locales, type Locale } from "@/i18n/config";
 
@@ -69,11 +70,8 @@ export default function IncludedPage({ locale, stateCode }: IncludedPageProps) {
       <>
         <Header />
         <main className="min-h-screen bg-background py-12">
-          <div className="max-w-2xl mx-auto px-4 text-center">
-            <div className="animate-pulse">
-              <div className="h-8 bg-muted rounded w-3/4 mx-auto mb-4"></div>
-              <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-            </div>
+          <div className="max-w-2xl mx-auto px-4">
+            <PageLoader message={t("loadingState")} />
           </div>
         </main>
         <Footer />
