@@ -1,0 +1,288 @@
+// Prisma Schema for FiviMedia LLC Formation App
+// See plan/04_implementation_plan.md and plan/05_coverage_data_model.md
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================
+// AUTHENTICATION
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// STATES & PRICING
+// ============================================
+
+model State {
+  id            String          @id @default(cuid())
+  code          String          @unique // e.g. "WY", "FL", "TX"
+  name          String                   // e.g. "Wyoming"
+  basePrice     Float                    // Base service fee
+  isRecommended Boolean         @default(false)
+  isActive      Boolean         @default(true)  // Can disable states
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  stateCoverage StateCoverage[]
+  orders        Order[]
+}
+
+// ============================================
+// COVERAGE (NORMALIZED per 05_coverage_data_model.md)
+// ============================================
+
+// Global master list of coverage items
+model CoverageItem {
+  id            String          @id @default(cuid())
+  key           String          @unique  // e.g. "ein_filing", "registered_agent"
+  titleEn       String                   // English title
+  titleAr       String                   // Arabic title
+  descriptionEn String?         @db.Text
+  descriptionAr String?         @db.Text
+  sortOrder     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  stateCoverage StateCoverage[]
+}
+
+// Join table: which coverage items apply to which state
+model StateCoverage {
+  id             String       @id @default(cuid())
+  stateId        String
+  coverageItemId String
+  enabled        Boolean      @default(true)
+  processingTime String?      // State-specific processing time, e.g. "10-12 days"
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  state        State        @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  coverageItem CoverageItem @relation(fields: [coverageItemId], references: [id], onDelete: Cascade)
+
+  @@unique([stateId, coverageItemId])
+  @@index([stateId])
+  @@index([coverageItemId])
+}
+
+// ============================================
+// ADD-ONS
+// ============================================
+
+model AddOn {
+  id            String   @id @default(cuid())
+  slug          String   @unique  // "bank_setup", "business_address", "us_phone"
+  nameEn        String            // English name
+  nameAr        String            // Arabic name
+  descriptionEn String?  @db.Text
+  descriptionAr String?  @db.Text
+  price         Float
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================
+// ORDERS
+// ============================================
+
+model Order {
+  id           String   @id @default(cuid())
+  entity       String   @default("LLC")
+  stateCode    String
+
+  // Selected add-ons (array of slugs)
+  // e.g. ["bank_setup", "us_phone"]
+  addOns       Json
+
+  // Customer Information
+  // { fullName, email, phone, country, businessName, notes }
+  customerInfo Json
+
+  // Server-computed pricing (NEVER trust client)
+  basePrice      Float
+  addOnTotal     Float
+  discountAmount Float    @default(0)  // Promo code discount
+  total          Float
+
+  // Promo code applied (if any)
+  promoCode      String?
+
+  // Order status
+  status       String   @default("pending") // pending, processing, completed, cancelled
+
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  state         State                @relation(fields: [stateCode], references: [code])
+  statusHistory OrderStatusHistory[]
+
+  @@index([status])
+  @@index([stateCode])
+  @@index([createdAt])
+}
+
+// ============================================
+// ORDER STATUS HISTORY
+// ============================================
+
+model OrderStatusHistory {
+  id             String   @id @default(cuid())
+  orderId        String
+  fromStatus     String?  // null for initial status
+  toStatus       String
+  changedBy      String   // User ID or "system"
+  changedByEmail String?
+  note           String?
+  createdAt      DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// ============================================
+// CONTACT SUBMISSIONS (LEADS)
+// ============================================
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  status    String   @default("new")  // "new" | "contacted" | "closed"
+  notes     String?  @db.Text         // Admin notes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// LANGUAGES (Admin-configurable)
+// ============================================
+
+model Language {
+  id        String   @id @default(cuid())
+  code      String   @unique  // e.g., "en", "ar", "fr"
+  name      String            // e.g., "English", "العربية"
+  direction String   @default("ltr")  // "ltr" or "rtl"
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// PROMO CODES
+// ============================================
+
+model PromoCode {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  type           String    // "percentage" | "fixed"
+  value          Float     // 10 = 10% or $10
+  usageLimit     Int?      // null = unlimited
+  usedCount      Int       @default(0)
+  minOrderAmount Float?    // Minimum order to apply
+  expiresAt      DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  userEmail String
+  action    String   // "create" | "update" | "delete"
+  entity    String   // "order" | "pricing" | "user" | "promo_code" | "state" | "lead"
+  entityId  String
+  changes   Json?    // { field: { from: x, to: y } }
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ============================================
+// FAQs (Admin-Managed, Multi-Language)
+// ============================================
+
+model FaqCategory {
+  id        String   @id @default(cuid())
+  key       String   @unique  // "general", "pricing", "process"
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations FaqCategoryTranslation[]
+  faqs         Faq[]
+}
+
+model FaqCategoryTranslation {
+  id         String @id @default(cuid())
+  categoryId String
+  locale     String // "en", "ar", etc.
+  name       String // "General Questions", "الأسئلة العامة"
+
+  category FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([categoryId])
+}
+
+model Faq {
+  id         String   @id @default(cuid())
+  categoryId String
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category     FaqCategory      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  translations FaqTranslation[]
+
+  @@index([categoryId])
+}
+
+model FaqTranslation {
+  id       String @id @default(cuid())
+  faqId    String
+  locale   String
+  question String
+  answer   String @db.Text
+
+  faq Faq @relation(fields: [faqId], references: [id], onDelete: Cascade)
+
+  @@unique([faqId, locale])
+  @@index([faqId])
+}

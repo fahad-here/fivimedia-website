@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Design System Colors - See plan/00_design_system_and_standards.md */
+:root {
+  /* Brand Colors */
+  --color-primary: #2563EB;
+  --color-primary-dark: #1E40AF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  /* Light Mode */
+  --background: #FFFFFF;
+  --background-muted: #F8FAFC;
+  --foreground: #0F172A;
+  --foreground-muted: #64748B;
+  --border: #E5E7EB;
+}
+
+.dark {
+  /* Dark Mode */
+  --background: #020617;
+  --background-muted: #0F172A;
+  --foreground: #E5E7EB;
+  --foreground-muted: #94A3B8;
+  --border: #1E293B;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-muted: var(--background-muted);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Typography - Inter font only */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+}
